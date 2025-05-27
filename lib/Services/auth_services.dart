@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+// import 'package:learn_megnagmet/login/forgot_password.dart';
 import 'package:learn_megnagmet/models/hoc_phan.dart';
 import 'package:learn_megnagmet/models/bo_de.dart';
 import 'package:learn_megnagmet/models/cau_hoi.dart';
@@ -14,15 +15,15 @@ import 'package:learn_megnagmet/models/feedback.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:learn_megnagmet/models/training_details.dart';
 import 'package:learn_megnagmet/models/chapter.dart';
+// import 'package:learn_megnagmet/models/user.dart';
 
 class AuthServices {
   static Future<http.Response> register(
-      String name, String email, String password, String phone) async {
+      String name, String email, String password) async {
     Map<String, String> data = {
       "full_name": name,
       "email": email,
       "password": password,
-      "phone": phone,
     };
     var body = json.encode(data);
     var url = Uri.parse(baseURL + 'register');
@@ -47,6 +48,34 @@ class AuthServices {
     );
   }
 
+  static Future<http.Response> loginGoogle(String email) async {
+    Map<String, String> data = {
+      "email": email,
+    };
+    var body = json.encode(data);
+    var url = Uri.parse(baseURL + 'loginGoogle');
+    return await http.post(
+      url,
+      headers: headers,
+      body: body,
+    );
+  }
+
+  static Future<http.Response> registerGoogle(String name, String email) async {
+    Map<String, String> data = {
+      "full_name": name,
+      "email": email,
+      // "password": passWord,
+    };
+    var body = json.encode(data);
+    var url = Uri.parse(baseURL + 'registerGoogle');
+    return await http.post(
+      url,
+      headers: headers,
+      body: body,
+    );
+  }
+
   static Future<List<HocPhan>> fetchHocPhan() async {
     var url = Uri.parse(baseURL + 'hocphan');
     http.Response response = await http.get(url, headers: headers);
@@ -56,6 +85,60 @@ class AuthServices {
       return jsonResponse.map((data) => HocPhan.fromJson(data)).toList();
     } else {
       throw Exception('Failed to load hoc phan');
+    }
+  }
+
+  static Future<bool> checkHasPassword(int userId) async {
+    final url = Uri.parse(baseURL + 'has_password/$userId');
+    final response = await http.get(url, headers: headers);
+
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      return jsonResponse['has_password'] == true;
+    } else {
+      throw Exception('Failed to check if user has password');
+    }
+  }
+
+  Future<Map<String, dynamic>> updatePassword({
+    required int userId,
+    String? oldPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  }) async {
+    final url = Uri.parse(baseURL + 'update_password/$userId');
+
+    // Tạo dữ liệu gửi đi
+    final body = {
+      'new_password': newPassword,
+      'new_password_confirmation': newPasswordConfirmation,
+    };
+
+    if (oldPassword != null) {
+      body['old_password'] = oldPassword;
+    }
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        // Nếu cần xác thực:
+        // 'Authorization': 'Bearer YOUR_TOKEN',
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200) {
+      return {
+        'success': true,
+        'message': jsonDecode(response.body)['message'],
+      };
+    } else {
+      return {
+        'success': false,
+        'message': jsonDecode(response.body)['message'] ?? 'Có lỗi xảy ra.',
+        'errors': jsonDecode(response.body)['errors'] ?? {},
+      };
     }
   }
 
@@ -164,11 +247,11 @@ class AuthServices {
   }
 
   static Future<http.Response> updateProfile(
-      String userId, String fullName, String email, String phone) async {
+      String userId, String fullName, String email) async {
     Map<String, String> data = {
       "full_name": fullName,
       "email": email,
-      "phone": phone,
+      // "phone": phone,
     };
     var body = json.encode(data);
     var url = Uri.parse(
@@ -187,7 +270,7 @@ class AuthServices {
     };
     var body = json.encode(data);
     var url =
-        Uri.parse(baseURL + 'forgot_password'); // Thay đổi URL cho API của bạn
+        Uri.parse(baseURL + 'send_reset_link'); // Thay đổi URL cho API của bạn
 
     return await http.post(
       url,
@@ -196,19 +279,36 @@ class AuthServices {
     );
   }
 
-  static Future<http.Response> resetPassword(
-      String token, String password) async {
+  static Future<http.Response> verifyOTP(String email, String otp) async {
     Map<String, String> data = {
-      "token": token,
-      "password": password,
+      "email": email,
+      "otp": otp,
     };
     var body = json.encode(data);
-    var url = Uri.parse(baseURL + 'reset_password');
+    var url = Uri.parse(baseURL + 'verify_otp');
     return await http.post(
       url,
       headers: headers,
       body: body,
     );
+  }
+
+  static Future<http.Response> resetPassword({
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    final url = Uri.parse(baseURL + 'reset_password');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      }),
+    );
+    return response;
   }
 
   // Phương thức mới để lấy danh sách loại trắc nghiệm
@@ -321,8 +421,9 @@ class AuthServices {
     }
   }
 
-   // Phương thức gửi phản hồi
-  static Future<http.Response> createTrainingDetails(TrainingDetail training_details) async {
+  // Phương thức gửi phản hồi
+  static Future<http.Response> createTrainingDetails(
+      TrainingDetail training_details) async {
     var url = Uri.parse(baseURL + 'training_details'); // Endpoint cho feedback
     var body = json.encode(training_details.toJson()); // Chuyển đổi thành JSON
 

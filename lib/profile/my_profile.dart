@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:learn_megnagmet/profile/setting.dart';
 // import 'package:learn_megnagmet/profile/my_certification.dart';
 import 'package:learn_megnagmet/home/achievement.dart'; // Import the new widget
+import 'package:learn_megnagmet/Services/urlimage.dart';
 
 class MyProfile extends StatefulWidget {
   @override
@@ -15,6 +16,7 @@ class _MyProfileState extends State<MyProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
         child: Center(
           child: Column(
             children: [
@@ -23,12 +25,11 @@ class _MyProfileState extends State<MyProfile> {
               SizedBox(height: 20.h), // Tạo khoảng cách
               _setting(), // Gọi widget _setting()
               SizedBox(height: 40.h), // Tạo khoảng cách
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
+              Container(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Chứng nhận",
+                    Text("Thành tựu học tập",
                         style: TextStyle(
                           fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
@@ -53,7 +54,7 @@ class _MyProfileState extends State<MyProfile> {
           radius: 50.r,
           backgroundColor: Colors.grey[300],
           backgroundImage: token.userAvatar.isNotEmpty
-              ? NetworkImage(token.userAvatar)
+              ? NetworkImage('$urlImage${token.userAvatar}')
               : AssetImage("assets/9187604.png") as ImageProvider,
         ),
         SizedBox(height: 12.h),
@@ -71,11 +72,10 @@ class _MyProfileState extends State<MyProfile> {
   }
 
   Widget _setting() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
+    return Container(
       child: ListTile(
         title: Text(
-          "Cài đặt",
+          "Cài đặt của bạn",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         leading: Icon(Icons.settings, size: 35.h, color: Color(0XFF23408F)),
@@ -93,32 +93,4 @@ class _MyProfileState extends State<MyProfile> {
       ),
     );
   }
-
-  // Widget _certification() {
-  //   return Padding(
-  //     padding: EdgeInsets.symmetric(horizontal: 20.w),
-  //     child: Column(
-  //       children: [
-  //         // SizedBox(height: 20.h), // Fixed space above the image
-  //         GestureDetector(
-  //           // onTap: () {
-  //           //   Navigator.push(
-  //           //     context,
-  //           //     MaterialPageRoute(builder: (context) => CertificateContent(hocPhanId: 7892137)),
-  //           //   );
-  //           // },
-  //           child: Container(
-  //             height: 360.h, // Set a fixed height for the image
-  //             width: double.infinity,
-  //             child: Image.asset(
-  //               "assets/certificate_7892137.png",
-  //               fit: BoxFit.fill,
-  //             ),
-  //           ),
-  //         ),
-  //         // SizedBox(height: 20.h), // Fixed space below the image
-  //       ],
-  //     ),
-  //   );
-  // }
 }

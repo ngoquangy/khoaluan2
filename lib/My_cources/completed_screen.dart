@@ -6,10 +6,11 @@ import 'package:learn_megnagmet/models/hoc_phan.dart';
 import 'package:learn_megnagmet/Services/auth_services.dart';
 import 'package:learn_megnagmet/models/bo_de.dart';
 import 'package:learn_megnagmet/models/exam_result.dart';
-import 'package:learn_megnagmet/models/certificate.dart';
+// import 'package:learn_megnagmet/models/certificate.dart';
 import 'package:learn_megnagmet/Services/token.dart' as token;
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:learn_megnagmet/My_cources/detail.dart'; // Nhập file mới
+import 'package:learn_megnagmet/Services/urlimage.dart';
 
 class CompletedScreen extends StatefulWidget {
   const CompletedScreen({Key? key}) : super(key: key);
@@ -117,7 +118,7 @@ class _CompletedScreenState extends State<CompletedScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12.r),
                   child: Image.network(
-                    hocPhan.photo,
+                    '$urlImage${hocPhan.photo}',
                     height: 100.h,
                     width: 100.w,
                     fit: BoxFit.cover,
@@ -131,9 +132,7 @@ class _CompletedScreenState extends State<CompletedScreen> {
                       SizedBox(height: 20.h),
                       Text(hocPhan.title,
                           style: TextStyle(
-                              fontSize: 18.sp,
-                              fontFamily: 'Gilroy',
-                              fontWeight: FontWeight.bold)),
+                              fontSize: 18.sp, fontWeight: FontWeight.bold)),
                       SizedBox(height: 10.h),
                       FutureBuilder<List<BoDeTracNghiem>>(
                         future: futureBoDe,
@@ -165,25 +164,12 @@ class _CompletedScreenState extends State<CompletedScreen> {
 
                               completed = completed > total ? total : completed;
 
-                              // Tạo chứng chỉ nếu hoàn thành tất cả
-                              if (completed == total && total > 0) {
-                                Certificate cert = Certificate(
-                                  userId: userId,
-                                  hocPhanId: hocPhan.id,
-                                  issueDate: DateTime.now().toIso8601String(),
-                                  createdAt: DateTime.now(),
-                                  updatedAt: DateTime.now(),
-                                );
-                                AuthServices.createCertificate(cert);
-                              }
-
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text("Hoàn thành: $completed / $total",
                                       style: TextStyle(
                                           fontSize: 14.sp,
-                                          fontFamily: 'Gilroy',
                                           fontWeight: FontWeight.w400)),
                                   SizedBox(height: 10.h),
                                   LinearPercentIndicator(
@@ -195,8 +181,7 @@ class _CompletedScreenState extends State<CompletedScreen> {
                                       padding: EdgeInsets.only(left: 12.w),
                                       child: Text(
                                         "${(completed / (total > 0 ? total : 1) * 100).toStringAsFixed(0)}%",
-                                        style: const TextStyle(
-                                            fontSize: 14, fontFamily: 'Gilroy'),
+                                        style: const TextStyle(fontSize: 14),
                                       ),
                                     ),
                                     backgroundColor: const Color(0XFFDEDEDE),

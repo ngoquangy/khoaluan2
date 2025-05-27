@@ -86,7 +86,6 @@ class _AchievementWidgetState extends State<AchievementWidget> {
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        margin: EdgeInsets.symmetric(horizontal: 20.w),
         decoration: BoxDecoration(
           color: Colors.transparent,
           border: Border.all(

@@ -5,6 +5,7 @@ import 'package:learn_megnagmet/models/certificate.dart';
 import 'package:learn_megnagmet/models/hoc_phan.dart';
 import 'package:learn_megnagmet/Services/auth_services.dart';
 import 'package:learn_megnagmet/Services/token.dart' as token;
+import 'package:qr_flutter/qr_flutter.dart';
 
 class CertificateContent extends StatefulWidget {
   final int hocPhanId;
@@ -37,7 +38,7 @@ class _CertificateContentState extends State<CertificateContent> {
         } else if (snapshot.hasError) {
           return Center(child: Text('Lỗi: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('Không có chứng chỉ nào'));
+          return const Center(child: Text('Chứng chỉ chưa được cấp'));
         }
 
         final certificates = snapshot.data!
@@ -118,6 +119,38 @@ class _CertificateContentState extends State<CertificateContent> {
                       Text(
                         'Ngày cấp: ${certificate.issueDate}',
                         style: const TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // ✅ HÀNG CHỨA CHỮ KÝ - LOGO - QR
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Ảnh chữ ký bên trái
+                          Image.asset(
+                            "assets/Picture1.png",
+                            width: 80.w,
+                            height: 80.h,
+                            fit: BoxFit.contain,
+                          ),
+
+                          // Logo chứng chỉ ở giữa
+                          Image.asset(
+                            "assets/certificate_1356.png",
+                            width: 80.w,
+                            height: 80.h,
+                            fit: BoxFit.contain,
+                          ),
+
+                          // QR code bên phải
+                          // QR code bên phải
+                          QrImageView(
+                            data:
+                                'http://192.168.171.200:8000/certificate/${certificate.userId}/${certificate.hocPhanId}',
+                            version: QrVersions.auto,
+                            size: 80.w,
+                          ),
+                        ],
                       ),
                     ],
                   ),

@@ -1,0 +1,2 @@
+E:/code/flutter/khoaluan2/android/app/.cxx/Debug/4d334o1q/x86/CMakeFiles/edit_cache.dir
+E:/code/flutter/khoaluan2/android/app/.cxx/Debug/4d334o1q/x86/CMakeFiles/rebuild_cache.dir

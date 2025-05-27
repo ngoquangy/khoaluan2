@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:learn_megnagmet/models/hoc_phan.dart';
-import 'package:learn_megnagmet/profile/my_certification.dart';
+import 'package:learn_megnagmet/My_cources/my_certification.dart';
 import 'package:learn_megnagmet/Services/auth_services.dart';
 import 'package:learn_megnagmet/models/cau_hoi.dart';
 import 'package:learn_megnagmet/My_cources/bo_de.dart';
 import 'package:learn_megnagmet/models/training_details.dart';
 import 'package:learn_megnagmet/My_cources/training_result.dart';
 import 'package:learn_megnagmet/models/bo_de.dart';
+import 'package:learn_megnagmet/home/home_main.dart';
+import 'package:get/get.dart';
+import 'package:learn_megnagmet/Services/urlimage.dart';
+import 'package:learn_megnagmet/models/certificate.dart';
+import 'package:learn_megnagmet/Services/token.dart' as token;
+import 'package:learn_megnagmet/models/exam_result.dart';
 
 class DetailPage extends StatefulWidget {
   final HocPhan hocPhan;
@@ -21,7 +27,8 @@ class DetailPage extends StatefulWidget {
 class _DetailPageState extends State<DetailPage> {
   late Future<List<TrainingDetail>> futureTrainingDetails;
   late Future<List<CauHoi>> _cauHoiFuture;
-  late Future<List<BoDeTracNghiem>> futureBoDe; // Thêm biến này
+  late Future<List<BoDeTracNghiem>> futureBoDe;
+  late Future<List<ExamResult>> futureExamResults;
   List<CauHoi> allCauHoi = [];
   int _currentIndex = 0;
   bool _isExpanded = false;
@@ -38,16 +45,53 @@ class _DetailPageState extends State<DetailPage> {
       return cauHoiList;
     });
     futureTrainingDetails = AuthServices.fetchKetQua();
-    futureBoDe = AuthServices.fetchBoDe(); // Lấy bộ đề
+    futureBoDe = AuthServices.fetchBoDe();
+    futureExamResults = AuthServices.fetchExamResults();
+
+    _checkAndCreateCertificate(); // Gọi hàm kiểm tra và cấp chứng chỉ
+  }
+
+  Future<void> _checkAndCreateCertificate() async {
+    try {
+      final examResults = await futureExamResults;
+      final boDeList = await futureBoDe;
+
+      final hocPhanBoDeList =
+          boDeList.where((boDe) => boDe.hocphanId == widget.hocPhan.id).toList();
+
+      final completedBoDeIds = examResults
+          .where((res) => res.status == 'Hoàn thành')
+          .map((res) => res.bodetracnghiemId)
+          .toSet();
+
+      final allCompleted = hocPhanBoDeList.every(
+        (boDe) => completedBoDeIds.contains(boDe.id),
+      );
+
+      if (allCompleted) {
+        await AuthServices.createCertificate(Certificate(
+          userId: int.parse(token.userId),
+          hocPhanId: widget.hocPhan.id,
+          issueDate: DateTime.now().toIso8601String(),
+        ));
+      }
+    } catch (e) {
+      print('Lỗi khi kiểm tra cấp chứng chỉ: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chi Tiết',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Chi Tiết', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Get.to(() => HomeMainScreen());
+          },
+        ),
       ),
       extendBodyBehindAppBar: true,
       body: SafeArea(
@@ -69,9 +113,8 @@ class _DetailPageState extends State<DetailPage> {
     final strippedText = _stripHtmlTags(widget.hocPhan.content);
     final words = strippedText.split(' ');
     final isLongText = words.length > 20;
-    final displayText = !_isExpanded && isLongText
-        ? words.take(20).join(' ') + '...'
-        : strippedText;
+    final displayText =
+        !_isExpanded && isLongText ? words.take(20).join(' ') + '...' : strippedText;
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
@@ -86,7 +129,7 @@ class _DetailPageState extends State<DetailPage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Image.network(
-              widget.hocPhan.photo,
+              '$urlImage${widget.hocPhan.photo}',
               height: 150,
               width: double.infinity,
               fit: BoxFit.fill,
@@ -104,7 +147,7 @@ class _DetailPageState extends State<DetailPage> {
           Row(
             children: [
               const Icon(Icons.calendar_today, size: 16),
-              SizedBox(width: 4),
+              const SizedBox(width: 4),
               FutureBuilder<List<BoDeTracNghiem>>(
                 future: futureBoDe,
                 builder: (context, snapshot) {
@@ -113,7 +156,10 @@ class _DetailPageState extends State<DetailPage> {
                   } else if (snapshot.hasError) {
                     return Text('Có lỗi: ${snapshot.error}');
                   } else {
-                    final count = snapshot.data?.where((boDe) => boDe.hocphanId == widget.hocPhan.id).length ?? 0;
+                    final count = snapshot.data
+                            ?.where((boDe) => boDe.hocphanId == widget.hocPhan.id)
+                            .length ??
+                        0;
                     return Text('$count bộ đề');
                   }
                 },
@@ -237,6 +283,7 @@ class _DetailPageState extends State<DetailPage> {
     return TrainingResultTab(
       futureTrainingDetails: futureTrainingDetails,
       hocPhanId: widget.hocPhan.id,
+      futureBoDe: futureBoDe,
     );
   }
 

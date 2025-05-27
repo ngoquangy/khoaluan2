@@ -7,6 +7,7 @@ import 'package:learn_megnagmet/models/dap_an.dart';
 import 'package:learn_megnagmet/models/loai_trac_nghiem.dart';
 import 'package:learn_megnagmet/My_cources/resultScreen.dart';
 import 'dart:async';
+import 'package:learn_megnagmet/Services/urlimage.dart';
 
 class QuestionDisplay extends StatefulWidget {
   final List<CauHoi> questions;
@@ -155,11 +156,6 @@ class _QuestionDisplayState extends State<QuestionDisplay> {
             results,
             0,
             "Chưa hoàn thành"); // Truyền hocphanId
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(response.statusCode == 200
-              ? 'Nộp bài thành công!'
-              : 'Có lỗi xảy ra khi nộp bài.'),
-        ));
 
         // Chuyển đến trang kết quả
         Navigator.push(
@@ -307,33 +303,52 @@ class _QuestionDisplayState extends State<QuestionDisplay> {
           : '_____',
     );
 
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Câu ${index + 1}: ',
-          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Câu ${index + 1}: ',
+              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
+            ),
+            Expanded(
+              // Sử dụng Expanded để phần câu hỏi chiếm không gian còn lại
+              child: DragTarget<String>(
+                onAccept: (data) {
+                  setState(() {
+                    _replacementIds[cauHoi.id.toString()] = data;
+                    _selectedAnswers[cauHoi.id.toString()] = data;
+                  });
+                },
+                builder: (context, candidateData, rejectedData) {
+                  return Text(
+                    displayedContent,
+                    style: TextStyle(fontSize: 18.sp),
+                    softWrap: true,
+                  );
+                },
+              ),
+            ),
+          ],
         ),
-        Expanded(
-          child: DragTarget<String>(
-            onAccept: (data) {
-              setState(() {
-                _replacementIds[cauHoi.id.toString()] = data;
-                _selectedAnswers[cauHoi.id.toString()] = data;
-              });
-            },
-            builder: (context, candidateData, rejectedData) {
-              return Text(
-                displayedContent,
-                style: TextStyle(fontSize: 18.sp),
-                softWrap: true,
-              );
-            },
+        // Ảnh hiển thị bên dưới phần câu hỏi
+        if (cauHoi.imageUrl != null && cauHoi.imageUrl!.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.only(top: 10.h),
+            child: ClipRect(
+              // Sử dụng ClipRect để đảm bảo không bị tràn viền
+              child: Image.network(
+                '$urlImage${cauHoi.imageUrl}',
+                width: double.infinity,
+                height: 200.h,
+                fit: BoxFit.fill, // Sử dụng BoxFit.cover để giữ tỷ lệ ảnh
+              ),
+            ),
           ),
-        ),
       ],
     );
-    // hiện cauHoi.code ở đây
   }
 
   Widget _buildAnswerWidgets(

@@ -12,11 +12,8 @@ import 'package:learn_megnagmet/utils/slider_page_data_model.dart';
 import 'package:learn_megnagmet/Services/token.dart' as token;
 // import 'package:intl/intl.dart';
 import '../utils/screen_size.dart';
-// import 'package:learn_megnagmet/Services/auth_services.dart';
-// import 'package:learn_megnagmet/models/hoc_phan.dart';
-// import 'package:learn_megnagmet/home/calendar_screen.dart';
-// import 'package:learn_megnagmet/My_cources/bo_de_screen.dart';
-// import 'package:learn_megnagmet/models/learning.dart';
+import 'package:learn_megnagmet/Services/urlimage.dart';
+
 import 'package:learn_megnagmet/home/RecentAddedList.dart';
 import 'package:learn_megnagmet/home/achievement.dart';
 
@@ -60,7 +57,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
   toggle(int index) {
     setState(() {
       if (trendingCource[index].buttonStatus == true) {
@@ -90,7 +86,8 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Scaffold(
         body: SafeArea(
-          child: SizedBox(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             height: double.infinity,
             width: double.infinity,
             child: GetBuilder<HomeController>(
@@ -100,8 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 16.h),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    Container(
                       child: Row(
                         children: [
                           CircleAvatar(
@@ -109,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             backgroundColor: Colors.grey[300],
                             backgroundImage: token.userAvatar.isNotEmpty
                                 ? NetworkImage(
-                                    token.userAvatar) // Hiển thị ảnh mới
+                                    '$urlImage${token.userAvatar}') // Hiển thị ảnh mới
                                 : AssetImage("assets/9187604.png")
                                     as ImageProvider,
                           ),
@@ -117,8 +113,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             "Welcome, ${token.userName}",
                             style: TextStyle(
-                              fontFamily: 'Gilroy',
-                              // color: Colors.black, // Màu chữ
                               fontSize: 22.sp,
                               fontWeight: FontWeight.w700,
                             ),
@@ -135,35 +129,32 @@ class _HomeScreenState extends State<HomeScreen> {
                         primary: true,
                         children: [
                           Container(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 20.w),
-                              child: TextFormField(
-                                onTap: () {
-                                  Get.to(SearchScreen());
-                                },
-                                readOnly:
-                                    true, // Thêm cái này để ngăn mở bàn phím khi chỉ dùng để điều hướng
-                                decoration: InputDecoration(
-                                  hintText: 'Học Phần',
-                                  hintStyle: TextStyle(
-                                    color: const Color(0xFF9B9B9B),
-                                    fontWeight: FontWeight.bold,
+                            child: TextFormField(
+                              onTap: () {
+                                Get.to(SearchScreen());
+                              },
+                              readOnly:
+                                  true, // Thêm cái này để ngăn mở bàn phím khi chỉ dùng để điều hướng
+                              decoration: InputDecoration(
+                                hintText: 'Học Phần',
+                                hintStyle: TextStyle(
+                                  color: const Color(0xFF9B9B9B),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: const Color(0xFF9B9B9B),
+                                  size: 34.sp,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(22),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: const Color(0xFF23408F),
+                                    width: 1.w,
                                   ),
-                                  prefixIcon: Icon(
-                                    Icons.search,
-                                    color: const Color(0xFF9B9B9B),
-                                    size: 34.sp,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(22),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: const Color(0xFF23408F),
-                                      width: 1.w,
-                                    ),
-                                    borderRadius: BorderRadius.circular(22),
-                                  ),
+                                  borderRadius: BorderRadius.circular(22),
                                 ),
                               ),
                             ),
@@ -174,12 +165,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           indicator(),
                           SizedBox(height: 20.h),
                           // horizontal_disidn(),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          Container(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text("Thành tựu ",
+                                Text("Thành tựu học tập",
                                     style: TextStyle(
                                       fontSize: 18.sp,
                                       fontWeight: FontWeight.w700,
@@ -188,10 +178,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           SizedBox(height: 21.h),
-AchievementWidget(), // Use the new widget here
+                          AchievementWidget(), // Use the new widget here
                           SizedBox(height: 21.h),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          Container(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -231,9 +220,7 @@ AchievementWidget(), // Use the new widget here
         },
       ),
       itemBuilder: (context, index, realIndex) {
-        return Padding(
-          padding:
-              EdgeInsets.symmetric(horizontal: 20.h), // Thụt vào 20h từ hai bên
+        return Container(
           child: Container(
             height: 150.h,
             decoration: BoxDecoration(
@@ -330,7 +317,6 @@ AchievementWidget(), // Use the new widget here
                     style: TextStyle(
                         color: Color(0XFF000000),
                         fontSize: 14.sp,
-                        fontFamily: 'Gilroy',
                         fontWeight: FontWeight.bold),
                   ),
                 )
@@ -339,8 +325,6 @@ AchievementWidget(), // Use the new widget here
           }),
     );
   }
-
-  
 
   Widget recentCourses() {
     return Container(

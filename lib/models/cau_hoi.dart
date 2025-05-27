@@ -2,6 +2,7 @@ class CauHoi {
   final int id;
   final String content;
   final String? code;
+  final String? imageUrl;
   final int hocphanId;
   final int loaiId;
   final int userId;
@@ -12,6 +13,7 @@ class CauHoi {
     required this.id,
     required this.content,
     required this.code,
+    required this.imageUrl,
     required this.hocphanId,
     required this.loaiId,
     required this.userId,
@@ -24,6 +26,7 @@ class CauHoi {
       id: json['id'],
       content: json['content'],
       code: json['code'],
+      imageUrl: json['photo'],
       hocphanId: json['hocphan_id'],
       loaiId: json['loai_id'],
       userId: json['user_id'],
@@ -37,6 +40,7 @@ class CauHoi {
       'id': id,
       'content': content,
       'code': code,
+      'photo': imageUrl,
       'hocphan_id': hocphanId,
       'loai_id': loaiId,
       'user_id': userId,

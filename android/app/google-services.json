@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "311355200824",
+    "project_id": "khoaluan-514bf",
+    "storage_bucket": "khoaluan-514bf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:311355200824:android:a861dcd0739eeba130ddcd",
+        "android_client_info": {
+          "package_name": "com.example.chungchi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "311355200824-ieeh007kcv642dk3q49q69rf5uu4em31.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chungchi",
+            "certificate_hash": "0ecb17a091679fd9e908ff45e37a7e520353ddd8"
+          }
+        },
+        {
+          "client_id": "311355200824-891sthug03p7lp9ukr63i2q6o025vest.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBeOoYKW6key4-NjuSIk02I4NW1bjvs18c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "311355200824-891sthug03p7lp9ukr63i2q6o025vest.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

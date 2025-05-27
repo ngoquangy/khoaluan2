@@ -9,6 +9,7 @@ import 'package:learn_megnagmet/login/forgot_password.dart';
 import 'package:learn_megnagmet/login/sign_up/sign_up_empty_screen.dart';
 import 'package:learn_megnagmet/utils/shared_pref.dart';
 import 'package:learn_megnagmet/Services/auth_services.dart'; // Import AuthServices
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../utils/screen_size.dart';
 import 'package:learn_megnagmet/Services/token.dart'
@@ -65,12 +66,11 @@ class _EmptyStateState extends State<EmptyState> {
                       SizedBox(height: 16.h),
                       Center(
                         child: Text(
-                          "Glad to meet you again!",
+                          "Rất vui được gặp bạn!",
                           style: TextStyle(
                               fontWeight: FontWeight.w500,
                               color: const Color(0XFF000000),
                               fontSize: 15.sp,
-                              fontFamily: 'Gilroy',
                               fontStyle: FontStyle.normal),
                           textAlign: TextAlign.center,
                         ),
@@ -114,7 +114,7 @@ class _EmptyStateState extends State<EmptyState> {
       child: Align(
         alignment: Alignment.topRight,
         child: Text(
-          "Forgot password?",
+          "Quên mật khẩu?",
           style: TextStyle(
             fontFamily: 'Gilroy',
             fontWeight: FontWeight.w700,
@@ -154,10 +154,7 @@ class _EmptyStateState extends State<EmptyState> {
               PrefData.setLogin(true);
               Get.to(const HomeMainScreen());
             } else {
-              // Hiển thị thông báo lỗi nếu đăng nhập không thành công
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Đăng nhập thất bại: ${response.body}")),
-              );
+              Get.snackbar('Thông báo', 'Thông tin đăng nhập không chính xác. Vui lòng thử lại!');
             }
           }
         },
@@ -182,27 +179,90 @@ class _EmptyStateState extends State<EmptyState> {
   }
 
   Widget login_google() {
-    return GestureDetector(
-      onTap: () {},
-      child: Container(
-        height: 56.h,
+    return Center(
+      child: SizedBox(
         width: 374.w,
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.grey.withOpacity(0.1)),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Image(image: AssetImage("assets/google.png")),
-            SizedBox(width: 10.w),
-            Text(
-              "Login with Google",
-              style: TextStyle(
-                  // color: Color(0XFF000000),
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w500),
+        height: 56.h,
+        child: ElevatedButton.icon(
+          onPressed: () async {
+            try {
+              final GoogleSignIn googleSignIn = GoogleSignIn();
+              final GoogleSignInAccount? googleUser =
+                  await googleSignIn.signIn();
+
+              if (googleUser != null) {
+                final String name = googleUser.displayName ?? "";
+                final String email = googleUser.email;
+                final String avatarUrl = googleUser.photoUrl ?? "";
+
+                // Gọi API loginGoogle
+                var response = await AuthServices.loginGoogle(email);
+
+                if (response.statusCode == 404) {
+                  // Nếu email chưa có => Gọi registerGoogle
+                  var registerResponse =
+                      await AuthServices.registerGoogle(name, email);
+
+                  if (registerResponse.statusCode == 200 ||
+                      registerResponse.statusCode == 201) {
+                    // ✅ Sau khi đăng ký thành công => đăng nhập lại
+                    response = await AuthServices.loginGoogle(email);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              "Đăng ký Google thất bại: ${registerResponse.body}")),
+                    );
+                    return;
+                  }
+                }
+
+                if (response.statusCode == 200) {
+                  Map responseMap = jsonDecode(response.body);
+
+                  token.userId = responseMap['user']['id'].toString();
+                  token.userName = responseMap['user']['full_name'];
+                  token.userEmail = responseMap['user']['email'];
+                  token.userPhone = responseMap['user']['phone'] ?? '';
+                  token.userAvatar = responseMap['user']['photo'] ?? avatarUrl;
+
+                  await PrefData.setLogin(true);
+                  Get.to(const HomeMainScreen());
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            "Đăng nhập Google thất bại: ${response.body}")),
+                  );
+                }
+              }
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Lỗi khi đăng nhập Google: $e")),
+              );
+            }
+          },
+          icon: Image.asset(
+            "assets/google.png",
+            height: 24.h,
+            width: 24.w,
+          ),
+          label: Text(
+            "Đăng nhập Google",
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w500,
+              fontFamily: 'Gilroy',
             ),
-          ],
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.grey.withOpacity(0.1),
+            foregroundColor: Colors.black87,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         ),
       ),
     );
@@ -212,7 +272,7 @@ class _EmptyStateState extends State<EmptyState> {
     return Center(
       child: RichText(
         text: TextSpan(
-          text: 'Already have an account?',
+          text: 'Bạn chưa có tài khoản?',
           style: TextStyle(
             color: Theme.of(context)
                 .textTheme
@@ -227,7 +287,7 @@ class _EmptyStateState extends State<EmptyState> {
                 ..onTap = () {
                   Get.to(const SignInEmptyScreen());
                 },
-              text: ' Sign up',
+              text: ' Đăng ký',
               style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.bold,
@@ -255,7 +315,7 @@ class _EmptyStateState extends State<EmptyState> {
           ),
         ),
         GestureDetector(
-          child: Text("OR Sign in with",
+          child: Text("OR Đăng nhập với",
               style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w400,
@@ -308,7 +368,7 @@ class _EmptyStateState extends State<EmptyState> {
                     EdgeInsets.only(left: 20.w, top: 20.h, bottom: 20.h)),
             validator: (val) {
               if (val!.isEmpty) {
-                return 'Enter the email';
+                return 'Vui lòng nhập email';
               } else {
                 if (!RegExp(r'^.+@[a-zA-Z]+\.{1}[a-zA-Z]+(\.{0,1}[a-zA-Z]+)$')
                     .hasMatch(val)) {
@@ -323,7 +383,7 @@ class _EmptyStateState extends State<EmptyState> {
             controller: passwordController,
             obscureText: ispassHiden,
             decoration: InputDecoration(
-                hintText: 'Password',
+                hintText: 'Mật khẩu',
                 hintStyle: TextStyle(
                     fontSize: 15.sp,
                     fontFamily: 'Gilroy',
@@ -356,7 +416,7 @@ class _EmptyStateState extends State<EmptyState> {
                 )),
             validator: (val) {
               if (val!.isEmpty) {
-                return 'Enter the password';
+                return 'Vui lòng nhập mật khẩu';
               }
               return null;
             },

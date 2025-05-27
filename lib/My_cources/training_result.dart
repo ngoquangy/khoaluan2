@@ -1,30 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:learn_megnagmet/models/training_details.dart';
+import 'package:learn_megnagmet/models/bo_de.dart';
 
 class TrainingResultTab extends StatelessWidget {
   final Future<List<TrainingDetail>> futureTrainingDetails;
+  final Future<List<BoDeTracNghiem>> futureBoDe;
   final int hocPhanId;
 
   const TrainingResultTab({
     Key? key,
     required this.futureTrainingDetails,
     required this.hocPhanId,
+    required this.futureBoDe,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<TrainingDetail>>(
-      future: futureTrainingDetails,
-      builder: (context, snapshot) {
+    return FutureBuilder(
+      future: Future.wait([futureTrainingDetails, futureBoDe]),
+      builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Center(child: Text('Lỗi tải dữ liệu: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('Chưa có kết quả luyện tập nào.'));
         }
 
-        final results = snapshot.data!
+        final trainingList = snapshot.data![0] as List<TrainingDetail>;
+        final boDeList = snapshot.data![1] as List<BoDeTracNghiem>;
+
+        final results = trainingList
             .where((detail) => detail.hocphanId == hocPhanId)
             .toList();
 
@@ -33,10 +37,15 @@ class TrainingResultTab extends StatelessWidget {
               child: Text('Không có kết quả cho học phần này.'));
         }
 
-        return Column(
-          children: results
-              .map((detail) => TrainingResultCard(detail: detail))
-              .toList(),
+        return SingleChildScrollView(
+          child: Column(
+            children: results.map((detail) {
+              final boDe = boDeList.firstWhere(
+                (b) => b.id == detail.tracnghiemId,
+              );
+              return TrainingResultCard(detail: detail, boDe: boDe);
+            }).toList(),
+          ),
         );
       },
     );
@@ -45,8 +54,13 @@ class TrainingResultTab extends StatelessWidget {
 
 class TrainingResultCard extends StatelessWidget {
   final TrainingDetail detail;
+  final BoDeTracNghiem boDe;
 
-  const TrainingResultCard({Key? key, required this.detail}) : super(key: key);
+  const TrainingResultCard({
+    Key? key,
+    required this.detail,
+    required this.boDe,
+  }) : super(key: key);
 
   String getXepLoai(double? diem) {
     if (diem == null) return "Không có";
@@ -104,7 +118,7 @@ class TrainingResultCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'ĐỀ ${detail.tracnghiemId}',
+                              'ĐỀ: ${boDe.title}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,

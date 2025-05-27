@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:learn_megnagmet/login/login_empty_state.dart';
-import 'package:learn_megnagmet/login/sign_up/term_and_condition.dart';
+import 'package:learn_megnagmet/profile/privacy_policy.dart';
 import '../../utils/screen_size.dart';
 import '../../Services/auth_services.dart'; // Import your AuthServices
 
@@ -92,12 +92,13 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
   Widget detailForm() {
     return Form(
       key: formKey,
+      autovalidateMode: AutovalidateMode.disabled,
       child: Column(
         children: [
           TextFormField(
             controller: nameController,
             decoration: InputDecoration(
-              hintText: 'Name',
+              hintText: 'Họ và tên',
               hintStyle: TextStyle(
                   fontSize: 15.sp,
                   fontFamily: 'Gilroy',
@@ -111,12 +112,21 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
                     BorderSide(color: const Color(0XFFDEDEDE), width: 1.w),
                 borderRadius: BorderRadius.circular(12),
               ),
+              errorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red, width: 1.w),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red, width: 1.w),
+                borderRadius: BorderRadius.circular(12),
+              ),
               filled: true,
               contentPadding:
                   EdgeInsets.only(left: 20.w, top: 20.h, bottom: 20.h),
             ),
             validator: (val) {
-              if (val!.isEmpty) return 'Enter your name';
+              if (val!.isEmpty) return 'Vui lòng nhập họ và tên';
+              if (val.length < 3) return 'Họ và tên phải có ít nhất 3 ký tự';
               return null;
             },
           ),
@@ -138,12 +148,20 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
                     BorderSide(color: const Color(0XFFDEDEDE), width: 1.w),
                 borderRadius: BorderRadius.circular(12),
               ),
+              errorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red, width: 1.w),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red, width: 1.w),
+                borderRadius: BorderRadius.circular(12),
+              ),
               filled: true,
               contentPadding:
                   EdgeInsets.only(left: 20.w, top: 20.h, bottom: 20.h),
             ),
             validator: (val) {
-              if (val!.isEmpty) return 'Enter your email';
+              if (val!.isEmpty) return 'Vui lòng nhập email';
               if (!RegExp(
                       r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                   .hasMatch(val)) {
@@ -153,33 +171,41 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
             },
           ),
           SizedBox(height: 20.h),
-          TextFormField(
-            controller: phoneController, // Phone number input
-            decoration: InputDecoration(
-              hintText: 'Phone Number',
-              hintStyle: TextStyle(
-                  fontSize: 15.sp,
-                  fontFamily: 'Gilroy',
-                  fontWeight: FontWeight.bold),
-              focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: const Color(0XFF23408F), width: 1.w)),
-              enabledBorder: OutlineInputBorder(
-                borderSide:
-                    BorderSide(color: const Color(0XFFDEDEDE), width: 1.w),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              filled: true,
-              contentPadding:
-                  EdgeInsets.only(left: 20.w, top: 20.h, bottom: 20.h),
-            ),
-            validator: (val) {
-              if (val!.isEmpty) return 'Enter your phone number';
-              return null;
-            },
-          ),
-          SizedBox(height: 20.h),
+          // TextFormField(
+          //   controller: phoneController,
+          //   decoration: InputDecoration(
+          //     hintText: 'Số điện thoại',
+          //     hintStyle: TextStyle(
+          //         fontSize: 15.sp,
+          //         fontFamily: 'Gilroy',
+          //         fontWeight: FontWeight.bold),
+          //     focusedBorder: OutlineInputBorder(
+          //         borderRadius: BorderRadius.circular(12),
+          //         borderSide:
+          //             BorderSide(color: const Color(0XFF23408F), width: 1.w)),
+          //     enabledBorder: OutlineInputBorder(
+          //       borderSide:
+          //           BorderSide(color: const Color(0XFFDEDEDE), width: 1.w),
+          //       borderRadius: BorderRadius.circular(12),
+          //     ),
+          //     errorBorder: OutlineInputBorder(
+          //       borderSide: BorderSide(color: Colors.red, width: 1.w),
+          //       borderRadius: BorderRadius.circular(12),
+          //     ),
+          //     focusedErrorBorder: OutlineInputBorder(
+          //       borderSide: BorderSide(color: Colors.red, width: 1.w),
+          //       borderRadius: BorderRadius.circular(12),
+          //     ),
+          //     filled: true,
+          //     contentPadding:
+          //         EdgeInsets.only(left: 20.w, top: 20.h, bottom: 20.h),
+          //   ),
+          //   validator: (val) {
+          //     if (val!.isEmpty) return 'Enter your phone number';
+          //     return null;
+          //   },
+          // ),
+          // SizedBox(height: 20.h),
           TextFormField(
             controller: passwordController,
             obscureText: isPassHidden,
@@ -193,7 +219,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
                     height: 20.h,
                     width: 20.w,
                   )),
-              hintText: 'Password',
+              hintText: 'Mật khẩu',
               hintStyle: const TextStyle(
                   fontSize: 15,
                   fontFamily: 'Gilroy',
@@ -207,12 +233,21 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
                     BorderSide(color: const Color(0XFFDEDEDE), width: 1.w),
                 borderRadius: BorderRadius.circular(12),
               ),
+              errorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red, width: 1.w),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red, width: 1.w),
+                borderRadius: BorderRadius.circular(12),
+              ),
               filled: true,
               contentPadding:
                   EdgeInsets.only(left: 20.w, top: 20.h, bottom: 20.h),
             ),
             validator: (val) {
-              if (val!.isEmpty) return 'Enter your password';
+              if (val!.isEmpty) return 'Vui lòng nhập mật khẩu';
+              if (val.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự';
               return null;
             },
           ),
@@ -230,7 +265,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
                     height: 20.h,
                     width: 20.w,
                   )),
-              hintText: 'Confirm password',
+              hintText: 'Nhập lại mật khẩu',
               hintStyle: TextStyle(
                   fontSize: 15.sp,
                   fontFamily: 'Gilroy',
@@ -243,12 +278,21 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
                 borderSide: BorderSide(color: Color(0XFFDEDEDE), width: 1.w),
                 borderRadius: BorderRadius.circular(12),
               ),
+              errorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red, width: 1.w),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red, width: 1.w),
+                borderRadius: BorderRadius.circular(12),
+              ),
               filled: true,
               contentPadding:
                   EdgeInsets.only(left: 20.w, top: 20.h, bottom: 20.h),
             ),
             validator: (val) {
-              if (val!.isEmpty) return 'Enter confirm password';
+              if (val!.isEmpty) return 'Vui lòng nhập lại mật khẩu';
+              if (val.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự';
               if (val != passwordController.text)
                 return 'Passwords do not match';
               return null;
@@ -274,10 +318,9 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
         ),
         RichText(
             text: TextSpan(
-                text: 'I Agree with ',
+                text: 'Tôi đồng ý với ',
                 style: TextStyle(
                   fontSize: 15.sp,
-                  fontFamily: 'Gilroy',
                   fontWeight: FontWeight.w400,
                   color: Theme.of(context)
                       .textTheme
@@ -288,14 +331,14 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
               TextSpan(
                 recognizer: TapGestureRecognizer()
                   ..onTap = () {
-                    Get.to(const TermCondition());
+                    Get.to(const PrivacyPolicy());
                   },
-                text: 'Terms and condition',
+                text: 'Điều khoản dịch vụ',
                 style: const TextStyle(
-                    color: Color(0XFF23408F),
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: 'Gilroy'),
+                  color: Color(0XFF23408F),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                ),
               )
             ])),
       ],
@@ -310,10 +353,12 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
             register();
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text('You must accept the terms and conditions')),
+              SnackBar(content: Text('Bạn phải đồng ý với điều khoản dịch vụ')),
             );
           }
+        } else {
+          // Trigger validation to show red borders
+          formKey.currentState!.validate();
         }
       },
       child: Container(
@@ -346,15 +391,11 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
 
     // Call your AuthServices to perform the registration
     try {
-      var response = await AuthServices.register(name, email, password, phone);
+      var response = await AuthServices.register(name, email, password);
       if (response.statusCode == 200) {
-        // Handle successful registration
+        Get.snackbar('Thông báo', 'Đăng ký thành công!');
+
         Get.offAll(const EmptyState()); // Navigate to the next screen
-      } else {
-        // Handle registration error
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registration failed: ${response.body}')),
-        );
       }
     } catch (e) {
       // Handle exceptions
@@ -369,7 +410,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
       alignment: Alignment.center,
       child: RichText(
         text: TextSpan(
-          text: 'Already have an account? ',
+          text: 'Bạn đã có tài khoản? ',
           style: TextStyle(
             color:
                 Theme.of(context).textTheme.bodyMedium!.color, // 👈 Tự đổi màu
@@ -382,7 +423,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
                 ..onTap = () {
                   Get.off(const EmptyState());
                 },
-              text: 'Login',
+              text: 'Đăng nhập',
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,

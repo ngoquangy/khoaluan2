@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:learn_megnagmet/home/home_main.dart';
+import 'package:learn_megnagmet/profile/setting.dart';
 import '../utils/screen_size.dart';
 import 'package:learn_megnagmet/Services/auth_services.dart';
 import 'package:learn_megnagmet/models/feedback.dart';
@@ -36,10 +36,6 @@ class _FeedBackState extends State<FeedBack> {
     initializeScreenSize(context);
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, size: 24.h),
-          onPressed: Get.back,
-        ),
         title: const Text('Gửi Phản Hồi',
             style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
@@ -57,17 +53,14 @@ class _FeedBackState extends State<FeedBack> {
                   Text("Đánh giá của bạn về ứng dụng!",
                       style: TextStyle(
                           fontSize: 18.sp,
-                          // color: Colors.black,
-                          fontFamily: 'Gilroy',
-                          fontWeight: FontWeight.w500)),
+                          )),
                   SizedBox(height: 16.h),
                   ratingbar(),
                   SizedBox(height: 40.h),
                   Text("Gửi phản hồi của bạn cho chúng tôi!",
                       style: TextStyle(
                           fontSize: 15.sp,
-                          // color: Colors.black,
-                          fontFamily: 'Gilroy')),
+                          )),
                   SizedBox(height: 20.h),
                   TextFormField(
                     maxLines: 5,
@@ -83,8 +76,8 @@ class _FeedBackState extends State<FeedBack> {
                               BorderSide(color: Color(0XFF23408F), width: 1.w)),
                       enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.h),
-                          borderSide:
-                              BorderSide(color: Colors.grey.shade300, width: 1.5)),
+                          borderSide: BorderSide(
+                              color: Colors.grey.shade300, width: 1.5)),
                       hintText: 'Viết phản hồi của bạn...',
                       hintStyle:
                           TextStyle(color: Color(0XFF6E758A), fontSize: 16.sp),
@@ -141,11 +134,9 @@ class _FeedBackState extends State<FeedBack> {
 
           final response = await AuthServices.createFeedBack(feedback);
 
-          if (response.statusCode == 201) {
-            Get.off(HomeMainScreen());
-            print('Feedback submitted successfully!');
-          } else {
-            print('Failed to submit feedback: ${response.body}');
+          if (response.statusCode == 200) {
+            Get.snackbar('Thành công', 'Phản hồi đã được gửi đi!');
+            Get.off(SettingsPage());
           }
         },
         child: Container(
@@ -161,7 +152,7 @@ class _FeedBackState extends State<FeedBack> {
                     color: Colors.white,
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,
-                    fontFamily: 'Gilroy')),
+                 )),
           ),
         ),
       );

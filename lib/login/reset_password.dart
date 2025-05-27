@@ -1,75 +1,104 @@
-// ignore_for_file: non_constant_identifier_names, deprecated_member_use
-
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:learn_megnagmet/login/login_empty_state.dart';
-
+import 'package:learn_megnagmet/login/login_empty_state.dart'; // Or wherever your login screen is
+import 'package:learn_megnagmet/Services/auth_services.dart';
 import '../utils/screen_size.dart';
 
-class ResetPassword extends StatefulWidget {
-  const ResetPassword({Key? key}) : super(key: key);
+class ResetPasswordScreen extends StatefulWidget {
+  final String email;
+
+  const ResetPasswordScreen({Key? key, required this.email}) : super(key: key);
 
   @override
-  State<ResetPassword> createState() => _ResetPasswordState();
+  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _ResetPasswordState extends State<ResetPassword> {
-  bool ispassHiden = false;
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  bool isResetting = false;
+  bool isPasswordVisible = false;
+  bool isConfirmPasswordVisible = false;
+  final formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     initializeScreenSize(context);
     return WillPopScope(
-      onWillPop: () {
-        return Future.value(false);
-      },
+      onWillPop: () => Future.value(false),
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
         body: SafeArea(
           child: Padding(
-            padding:  EdgeInsets.only(left: 20.w, right: 20.w),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 SizedBox(height: 16.h),
-                back_button(),
-                SizedBox(height: 20.h),
-                 Center(
-                  child: Text("Reset Password",
-                      style: TextStyle(
-                          fontSize: 24.sp,
-                          fontFamily: 'Gilroy',
-                          color: Color(0XFF000000),
-                          fontWeight: FontWeight.w700),
-                      textAlign: TextAlign.center),
+                SizedBox(height: 50.h),
+                Center(
+                  child: Text(
+                    "Đặt Lại Mật Khẩu",
+                    style: TextStyle(
+                      fontSize: 24.sp,
+                      fontFamily: 'Gilroy',
+                      color: Color(0XFF000000),
+                      fontWeight: FontWeight.w700,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-                 SizedBox(height: 16.h),
+                SizedBox(height: 16.h),
                 Expanded(
                   child: ListView(
                     children: [
                       Align(
                         alignment: Alignment.center,
                         child: Text(
-                            "Enter password which are different from the previous paswords.",
-                            style: TextStyle(
-                                color: Color(0XFF000000),
-                                fontSize: 15.sp,
-                                fontFamily: 'Gilroy',
-                                fontWeight: FontWeight.w400),
-                            textAlign: TextAlign.center),
+                          "Nhập một mật khẩu mới cho tài khoản của bạn!",
+                          style: TextStyle(
+                            color: Color(0XFF000000),
+                            fontSize: 15.sp,
+                            fontFamily: 'Gilroy',
+                            fontWeight: FontWeight.w400,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                       SizedBox(height: 20.h),
-                      passwordtextfield('Password'),
-                      SizedBox(height: 20.h),
-                      passwordtextfield('Confirm password'),
-                      SizedBox(height: 30),
-                      done_button(),
+                      Form(
+                        key: formKey,
+                        child: Column(
+                          children: [
+                            _buildPasswordField(
+                              controller: _passwordController,
+                              label: 'Mật khẩu mới',
+                              isObscured: !isPasswordVisible,
+                              onToggle: () => setState(
+                                  () => isPasswordVisible = !isPasswordVisible),
+                            ),
+                            SizedBox(height: 20.h),
+                            _buildPasswordField(
+                              controller: _confirmPasswordController,
+                              label: 'Nhập lại mật khẩu mới',
+                              isObscured: !isConfirmPasswordVisible,
+                              onToggle: () => setState(() =>
+                                  isConfirmPasswordVisible =
+                                      !isConfirmPasswordVisible),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 30.h),
+                      _buildSubmitButton(),
                     ],
                   ),
                 ),
-
-
+                Padding(
+                  padding: EdgeInsets.only(bottom: 30.h),
+                  child: _buildOkButton(),
+                ),
               ],
             ),
           ),
@@ -78,162 +107,185 @@ class _ResetPasswordState extends State<ResetPassword> {
     );
   }
 
-  toggle() {
-    setState(() {
-      ispassHiden = !ispassHiden;
-    });
-  }
-
-  Widget passwordtextfield(String i) {
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required bool isObscured,
+    required VoidCallback onToggle,
+  }) {
     return TextFormField(
-      obscureText: ispassHiden,
+      controller: controller,
+      obscureText: isObscured,
+      validator: (val) {
+        if (val!.isEmpty) return 'Vui lòng nhập mật khẩu';
+        if (val.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự';
+        if (label == 'Nhập lại mật khẩu mới' &&
+            val != _passwordController.text) {
+          return 'Mật khẩu không khớp';
+        }
+        return null;
+      },
       decoration: InputDecoration(
-          hintText: i,
-          hintStyle:  TextStyle(
-              fontSize: 15.sp,
-              fontFamily: 'Gilroy',
-              color: const Color(0XFF9B9B9B),
-              fontWeight: FontWeight.bold),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+        hintText: label,
+        hintStyle: TextStyle(
+          fontSize: 15.sp,
+          fontFamily: 'Gilroy',
+          fontWeight: FontWeight.bold,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: const Color(0XFF23408F), width: 1.w),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: const Color(0XFFDEDEDE), width: 1.w),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.red, width: 1.w),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.red, width: 1.w),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        filled: true,
+        contentPadding: EdgeInsets.only(left: 20.w, top: 20.h, bottom: 20.h),
+        suffixIcon: GestureDetector(
+          onTap: onToggle,
+          child: Image(
+            image: isObscured
+                ? const AssetImage("assets/notvisible_eye.png")
+                : const AssetImage("assets/visible_eye.png"),
+            height: 20.h,
+            width: 20.w,
           ),
-          filled: true,
-          fillColor: const Color(0xFFF5F5F5),
-          contentPadding:  EdgeInsets.only(left: 20.w),
-          focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide:  BorderSide(color: const Color(0XFF23408F), width: 1.w)),
-          enabledBorder:OutlineInputBorder(
-            borderSide: BorderSide(color: const Color(0XFFDEDEDE),width: 1.w),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          suffixIcon: ispassHiden
-              ? GestureDetector(
-                  onTap: () => toggle(),
-                  child:  Image(
-                    image: const AssetImage("assets/notvisible_eye.png"),
-                    height: 20.h,
-                    width: 20.w,
-                  ))
-              : GestureDetector(
-                  onTap: () => toggle(),
-                  child:  Image(
-                    image: const AssetImage("assets/visible_eye.png"),
-                    height: 20.h,
-                    width: 20.w,
-                  ))),
+        ),
+      ),
+      style: TextStyle(
+        fontSize: 15.sp,
+        fontFamily: 'Gilroy',
+        fontWeight: FontWeight.w700,
+      ),
     );
   }
 
-  Widget back_button() {
-    return TextButton(
-        onPressed: () {
-         Get.back();
-        },
-        child:Image(
-          image: const AssetImage("assets/back_arrow.png"),
-          height: 24.h,
-          width: 24.w,
-        ));
-  }
-
-  Widget done_button() {
+  Widget _buildSubmitButton() {
     return Center(
       child: GestureDetector(
-        onTap: () {
-          showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-              backgroundColor: const Color(0XFFFFFFFF),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              actions: [
-                Center(
-                  child: Padding(
-                    padding:  EdgeInsets.only(left: 15.w, right: 15.w),
-                    child: Column(
-                      children: [
-                         SizedBox(height: 20.h),
-                          Image(image:const  AssetImage("assets/Privacy2.png"),height: 88.13.h,width: 76.33.w,),
-                         SizedBox(height: 20.h),
-                         Text(
-                          "Changed !",
-                          style: TextStyle(
-                              fontSize: 22.sp,
-                              fontFamily: 'Gilroy',
-                              fontWeight: FontWeight.w700),
-                        ),
-                         SizedBox(height: 20.h),
-                         Align(
-                          //alignment: Alignment.centerRight,
-                          child: Text(
-                            "Your password has been changed sucessfully ! ",
-                            style: TextStyle(
-                                fontSize: 15.sp,
-                                fontFamily: 'Gilroy',
-                                fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
+        onTap: isResetting
+            ? null
+            : () async {
+                if (formKey.currentState!.validate()) {
+                  setState(() => isResetting = true);
+                  try {
+                    final response = await AuthServices.resetPassword(
+                      email: widget.email,
+                      password: _passwordController.text.trim(),
+                      passwordConfirmation:
+                          _confirmPasswordController.text.trim(),
+                    );
+
+                    if (response.statusCode == 200) {
+                      showDialog(
+                        barrierDismissible: false,
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          backgroundColor: const Color(0XFFFFFFFF),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
                           ),
+                          actions: [
+                            Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 15.w),
+                                child: Column(
+                                  children: [
+                                    SizedBox(height: 20.h),
+                                    Image(
+                                      image: const AssetImage(
+                                          "assets/Privacy2.png"),
+                                      height: 88.13.h,
+                                      width: 76.33.w,
+                                    ),
+                                    SizedBox(height: 20.h),
+                                    Text(
+                                      "Thành công!",
+                                      style: TextStyle(
+                                        fontSize: 22.sp,
+                                        fontFamily: 'Gilroy',
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    SizedBox(height: 20.h),
+                                    Text(
+                                      "Mật khẩu của bạn đã được thay đổi thành công!",
+                                      style: TextStyle(
+                                        fontSize: 15.sp,
+                                        fontFamily: 'Gilroy',
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(height: 20.h),
+                                  ],
+                                ),
+                              ),
+                            )
+                          ],
                         ),
-                         SizedBox(height: 20.h),
-                        ok_button(),
-                      ],
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ); // Navigator.push(context,//     MaterialPageRoute(builder: (context) => const()));
-        },
+                      ).then((_) {
+                        Future.delayed(const Duration(seconds: 3), () {
+                          Get.offAll(const EmptyState());
+                        });
+                      });
+                    } else {
+                      Get.snackbar("Lỗi",
+                          "Không thể đặt lại mật khẩu: ${response.body}");
+                    }
+                  } catch (e) {
+                    Get.snackbar("Lỗi", "Đã xảy ra lỗi: $e");
+                  }
+                  setState(() => isResetting = false);
+                }
+              },
         child: Container(
           height: 56.h,
-          width: 374.w,
-          //color: Color(0XFF23408F),
+          width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: const Color(0XFF23408F),
+            color: isResetting ? Colors.grey : const Color(0XFF23408F),
           ),
-          child:  Center(
-            child: Text("Done",
-                style: TextStyle(
-                    color: const Color(0XFFFFFFFF),
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Gilroy')),
+          child: Center(
+            child: isResetting
+                ? const CircularProgressIndicator(color: Colors.white)
+                : Text(
+                    "Hoàn thành",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
           ),
         ),
       ),
     );
   }
 
-  Widget ok_button() {
-    return Padding(
-      padding:  EdgeInsets.only(top: 10.h, bottom: 20.h),
-      child: Center(
-        child: GestureDetector(
-          onTap: () {
-
-            Get.off(EmptyState());
-          },
-          child: Container(
-            height: 56.h,
-            width: 334.w,
-            //color: Color(0XFF23408F),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: const Color(0XFF23408F),
-            ),
-            child:  Center(
-              child: Text("Ok",
-                  style: TextStyle(
-                      color: const Color(0XFFFFFFFF),
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Gilroy')),
-            ),
-          ),
+  Widget _buildOkButton() {
+    return Center(
+      child: RichText(
+        text: TextSpan(
+          text: 'Quay lại đăng nhập?',
+          style: TextStyle(fontSize: 15.sp, color: Colors.black),
+          children: [
+            TextSpan(
+              recognizer: TapGestureRecognizer()
+                ..onTap = () => Get.off(const EmptyState()),
+              text: ' Đăng nhập',
+              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w700),
+            )
+          ],
         ),
       ),
     );

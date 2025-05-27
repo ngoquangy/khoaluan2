@@ -7,6 +7,7 @@ import 'package:learn_megnagmet/models/hoc_phan.dart';
 import 'package:learn_megnagmet/my_cources/question_display.dart';
 import 'package:learn_megnagmet/models/exam_result.dart';
 import 'package:learn_megnagmet/Services/token.dart' as token;
+import 'package:learn_megnagmet/models/learning.dart';
 
 class BoDeTab extends StatefulWidget {
   final HocPhan hocPhan;
@@ -214,27 +215,41 @@ class _BoDeTabState extends State<BoDeTab> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.description,
-                color: Color(0xFF23408F), size: 25),
-            onPressed: () {
-              final questions = boDe.questions.map((question) {
-                return widget.allCauHoi.firstWhere(
-                  (cauHoi) => cauHoi.id == int.parse(question.idQuestion),
-                );
-              }).toList();
+              icon: const Icon(Icons.description,
+                  color: Color(0xFF23408F), size: 25),
+              onPressed: () async {
+                // Lấy ngày hiện tại theo định dạng yyyy-MM-dd
+                final now = DateTime.now();
+                final formattedDate =
+                    '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => QuestionDisplay(
-                    questions: questions,
-                    bodeId: boDe.id.toString(),
-                    hocphanId: widget.hocPhan.id,
+                // Gửi dữ liệu Learning
+                final learning = Learning(
+                  userId: int.parse(token.userId),
+                  timeSpending: formattedDate,
+                );
+
+                await AuthServices.createThanhTuu(learning);
+
+                // Lấy danh sách câu hỏi tương ứng với bộ đề
+                final questions = boDe.questions.map((question) {
+                  return widget.allCauHoi.firstWhere(
+                    (cauHoi) => cauHoi.id == int.parse(question.idQuestion),
+                  );
+                }).toList();
+
+                // Chuyển sang màn hình làm bài
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QuestionDisplay(
+                      questions: questions,
+                      bodeId: boDe.id.toString(),
+                      hocphanId: widget.hocPhan.id,
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              }),
         ],
       ),
     );

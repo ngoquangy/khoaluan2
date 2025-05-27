@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import '../controller/controller.dart';
 import '../Services/token.dart' as token;
 import '../Services/auth_services.dart';
+import '../profile/setting.dart'; // Import SettingsPage
+import 'package:learn_megnagmet/Services/urlimage.dart';
 
 class EditScreen extends StatefulWidget {
   const EditScreen({Key? key}) : super(key: key);
@@ -16,11 +18,15 @@ class EditScreen extends StatefulWidget {
 }
 
 class _EditScreenState extends State<EditScreen> {
-  final EditScreenController editScreenController = Get.put(EditScreenController());
+  final EditScreenController editScreenController =
+      Get.put(EditScreenController());
 
-  final TextEditingController _nameController = TextEditingController(text: token.userName);
-  final TextEditingController _emailController = TextEditingController(text: token.userEmail);
-  final TextEditingController _phoneController = TextEditingController(text: token.userPhone);
+  final TextEditingController _nameController =
+      TextEditingController(text: token.userName);
+  final TextEditingController _emailController =
+      TextEditingController(text: token.userEmail);
+  final TextEditingController _phoneController =
+      TextEditingController(text: token.userPhone);
 
   @override
   void dispose() {
@@ -36,7 +42,8 @@ class _EditScreenState extends State<EditScreen> {
       onWillPop: () async => true,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Chỉnh Sửa Hồ Sơ', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text('Chỉnh Sửa Hồ Sơ',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           backgroundColor: Colors.transparent,
         ),
         resizeToAvoidBottomInset: false,
@@ -58,6 +65,7 @@ class _EditScreenState extends State<EditScreen> {
   Widget _buildForm() {
     return ListView(
       children: [
+        SizedBox(height: 60.h),
         Center(
           child: Stack(
             alignment: Alignment.bottomRight,
@@ -66,7 +74,7 @@ class _EditScreenState extends State<EditScreen> {
                 radius: 50.r,
                 backgroundColor: Colors.grey[300],
                 backgroundImage: token.userAvatar.isNotEmpty
-                    ? NetworkImage(token.userAvatar) // Hiển thị ảnh mới
+                    ? NetworkImage('$urlImage${token.userAvatar}')
                     : AssetImage("assets/9187604.png") as ImageProvider,
               ),
               Positioned(
@@ -88,17 +96,18 @@ class _EditScreenState extends State<EditScreen> {
             ],
           ),
         ),
-        SizedBox(height: 30.h),
+        SizedBox(height: 60.h),
         _buildTextField(Icons.person, _nameController, "Họ và tên"),
         SizedBox(height: 20.h),
         _buildTextField(Icons.email, _emailController, "Email"),
-        SizedBox(height: 20.h),
-        _buildTextField(Icons.phone, _phoneController, "Số điện thoại"),
+        // SizedBox(height: 20.h),
+        // _buildTextField(Icons.phone, _phoneController, "Số điện thoại"),
       ],
     );
   }
 
-  Widget _buildTextField(IconData icon, TextEditingController controller, String hintText) {
+  Widget _buildTextField(
+      IconData icon, TextEditingController controller, String hintText) {
     return Container(
       height: 60.h,
       decoration: BoxDecoration(
@@ -110,7 +119,6 @@ class _EditScreenState extends State<EditScreen> {
             blurRadius: 5,
           ),
         ],
-        // color: Colors.white,
       ),
       child: Padding(
         padding: EdgeInsets.all(8.0.h),
@@ -124,7 +132,6 @@ class _EditScreenState extends State<EditScreen> {
           ),
           style: TextStyle(
             fontSize: 15.sp,
-            // color: Colors.black,
             fontFamily: 'Gilroy',
             fontWeight: FontWeight.w700,
           ),
@@ -151,7 +158,6 @@ class _EditScreenState extends State<EditScreen> {
                 color: Color(0XFFFFFFFF),
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
-                fontFamily: 'Gilroy',
               ),
             ),
           ),
@@ -160,20 +166,18 @@ class _EditScreenState extends State<EditScreen> {
     );
   }
 
-  // Hàm chọn ảnh và upload
   Future<void> _onAddImage() async {
     if (Platform.isAndroid || Platform.isIOS) {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-      
+
       if (image != null) {
         Get.snackbar('Thông báo', 'Đang cập nhật ảnh...');
-        
+
         try {
           var response = await AuthServices.updatePhoto(token.userId, image);
 
           if (response.statusCode == 200) {
-            // Cập nhật ảnh sau khi thành công
             setState(() {
               token.userAvatar = jsonDecode(response.body)['photo_url'];
             });
@@ -194,7 +198,7 @@ class _EditScreenState extends State<EditScreen> {
         token.userId,
         _nameController.text,
         _emailController.text,
-        _phoneController.text,
+        // _phoneController.text,
       );
 
       if (response.statusCode == 200) {
@@ -203,7 +207,8 @@ class _EditScreenState extends State<EditScreen> {
         token.userPhone = _phoneController.text;
 
         Get.snackbar('Thành công', 'Đã cập nhật hồ sơ thành công');
-        Get.back();
+        // Quay về SettingsPage nếu lưu thành công
+        Get.off(() => SettingsPage());
       } else {
         Get.snackbar('Lỗi', 'Không thể cập nhật hồ sơ: ${response.body}');
       }

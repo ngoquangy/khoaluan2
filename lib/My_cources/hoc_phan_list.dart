@@ -7,6 +7,7 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:learn_megnagmet/models/certificate.dart';
 import 'package:learn_megnagmet/My_cources/detail.dart'; // Nhập file mới
 import 'package:learn_megnagmet/Services/auth_services.dart';
+import 'package:learn_megnagmet/Services/urlimage.dart';
 
 class HocPhanCard extends StatelessWidget {
   final HocPhan hocPhan;
@@ -50,7 +51,7 @@ class HocPhanCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16.r),
                   child: Image.network(
-                    hocPhan.photo,
+                    '$urlImage${hocPhan.photo}',
                     height: 100.h,
                     width: 100.w,
                     fit: BoxFit.cover,
@@ -75,7 +76,6 @@ class HocPhanCard extends StatelessWidget {
           hocPhan.title,
           style: TextStyle(
             fontSize: 18.sp,
-            fontFamily: 'Gilroy',
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -123,17 +123,6 @@ class HocPhanCard extends StatelessWidget {
             filteredBoDe.any((bode) => bode.id == result.bodetracnghiemId))
         .length;
 
-    if (completed >= total && total > 0) {
-      final certificate = Certificate(
-        userId: userId,
-        hocPhanId: hocPhan.id,
-        issueDate: DateTime.now().toIso8601String(),
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-      AuthServices.createCertificate(certificate);
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -141,7 +130,6 @@ class HocPhanCard extends StatelessWidget {
           "Hoàn thành: $completed / $total",
           style: TextStyle(
             fontSize: 14.sp,
-            fontFamily: 'Gilroy',
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -155,7 +143,6 @@ class HocPhanCard extends StatelessWidget {
             child: Text(
               "${(completed / (total > 0 ? total : 1) * 100).toStringAsFixed(0)}%",
               style: TextStyle(
-                fontFamily: 'Gilroy',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
               ),

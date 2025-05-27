@@ -6,6 +6,8 @@ import '../utils/screen_size.dart';
 import 'package:learn_megnagmet/Services/token.dart' as token;
 import 'package:learn_megnagmet/Services/auth_services.dart';
 import 'package:learn_megnagmet/models/training_details.dart';
+import 'package:learn_megnagmet/models/hoc_phan.dart';
+import 'package:learn_megnagmet/My_cources/detail.dart';
 
 class ResultScreen extends StatefulWidget {
   final int elapsedTime; // Thêm biến để nhận elapsedTime
@@ -29,6 +31,7 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> {
   HomeMainController controller = Get.put(HomeMainController());
   late double score;
+  HocPhan? hocPhan; // Add this line
 
   @override
   void initState() {
@@ -36,6 +39,23 @@ class _ResultScreenState extends State<ResultScreen> {
     // Tính điểm và lưu ngay
     score = (widget.correctAnswers / widget.totalQuestions) * 10;
     _saveScore();
+    _loadHocPhan(); // Load HocPhan data
+  }
+
+  Future<void> _loadHocPhan() async {
+    try {
+      List<HocPhan> allHocPhan = await AuthServices.fetchHocPhan();
+      HocPhan foundHocPhan = allHocPhan.firstWhere(
+        (hp) => hp.id == widget.hocphanId,
+      );
+
+      setState(() {
+        hocPhan = foundHocPhan;
+      });
+    } catch (e) {
+      // Xử lý lỗi nếu không tìm thấy HocPhan
+      print('Lỗi khi tải dữ liệu HocPhan: $e');
+    }
   }
 
   Future<void> _saveScore() async {
@@ -51,7 +71,8 @@ class _ResultScreenState extends State<ResultScreen> {
     // Tạo đối tượng TrainingDetail
     TrainingDetail trainingDetail = TrainingDetail(
       hocphanId: widget.hocphanId, // Thay đổi theo ID học phần của bạn
-      tracnghiemId: int.parse(widget.bodeId), // Thay đổi theo ID bài trắc nghiệm của bạn
+      tracnghiemId:
+          int.parse(widget.bodeId), // Thay đổi theo ID bài trắc nghiệm của bạn
       point: score.round().toString(),
       totalTime: widget.elapsedTime.toString(),
       date: DateTime.now().toIso8601String(),
@@ -64,18 +85,7 @@ class _ResultScreenState extends State<ResultScreen> {
 
     try {
       // Gọi phương thức tạo TrainingDetail
-      final response = await AuthServices.createTrainingDetails(trainingDetail);
-      if (response.statusCode == 200) {
-        // Xử lý thành công
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lưu thông tin thành công!')),
-        );
-      } else {
-        // Xử lý lỗi khi cập nhật không thành công
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không thể lưu thông tin.')),
-        );
-      }
+      await AuthServices.createTrainingDetails(trainingDetail);
     } catch (e) {
       // Xử lý lỗi mạng hoặc lỗi khác
       ScaffoldMessenger.of(context).showSnackBar(
@@ -84,14 +94,7 @@ class _ResultScreenState extends State<ResultScreen> {
     }
 
     try {
-      final response =
-          await AuthServices.updatePoint(userId, widget.bodeId, score.round());
-      if (response.statusCode != 200) {
-        // Xử lý lỗi khi cập nhật không thành công
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Không thể lưu điểm.')),
-        );
-      }
+      await AuthServices.updatePoint(userId, widget.bodeId, score.round());
     } catch (e) {
       // Xử lý lỗi mạng hoặc lỗi khác
       ScaffoldMessenger.of(context).showSnackBar(
@@ -101,14 +104,7 @@ class _ResultScreenState extends State<ResultScreen> {
 
     if (score >= 7) {
       try {
-        final response = await AuthServices.updateStatus(
-            userId, widget.bodeId, "Hoàn thành");
-        if (response.statusCode != 200) {
-          // Xử lý lỗi khi cập nhật không thành công
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Không thể lưu')),
-          );
-        }
+        await AuthServices.updateStatus(userId, widget.bodeId, "Hoàn thành");
       } catch (e) {
         // Xử lý lỗi mạng hoặc lỗi khác
         ScaffoldMessenger.of(context).showSnackBar(
@@ -123,18 +119,24 @@ class _ResultScreenState extends State<ResultScreen> {
     initializeScreenSize(context);
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80.0), // Chiều cao của AppBar
+        preferredSize: Size.fromHeight(80.0),
         child: Column(
           children: [
             AppBar(
               title: Text('Kết Quả',
                   style: TextStyle(fontWeight: FontWeight.bold)),
-              backgroundColor: Colors.transparent, // Màu nền của AppBar
+              backgroundColor: Colors.transparent,
+              leading: IconButton(
+                icon: Icon(Icons.clear),
+                onPressed: () {
+                  // Trở về trang DetailPage khi nhấn nút back
+                  Get.to(() => DetailPage(hocPhan: hocPhan!));
+                },
+              ),
             ),
             Container(
-              height: 4.0, // Chiều cao của gạch ngang
-              color: const Color.fromARGB(
-                  255, 210, 210, 210), // Màu của gạch ngang
+              height: 4.0,
+              color: const Color.fromARGB(255, 210, 210, 210),
             ),
           ],
         ),
@@ -146,6 +148,7 @@ class _ResultScreenState extends State<ResultScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              SizedBox(height: 10.h),
               Image(
                 image: AssetImage("assets/success.png"),
                 height: 100,

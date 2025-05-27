@@ -59,7 +59,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Thành Tựu', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Thành Tựu Học Tập', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
       ),
       body: SafeArea(
